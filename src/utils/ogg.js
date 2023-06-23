@@ -20,10 +20,10 @@ class OggConverter {
 
       return new Promise((res, rej) => {
         ffmpeg(inputPath)
-          .inputOption('-t 300')
+          .inputOption('-t 500')
           .output(outputPath)
           .on('end', () => {
-            // removeFile(inputPath);
+            removeFile(inputPath);
             res(outputPath);
           })
           .on('error', (err) => rej(err.message))

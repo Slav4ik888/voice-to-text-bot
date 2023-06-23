@@ -4,6 +4,7 @@ import { message } from 'telegraf/filters';
 import { code } from 'telegraf/format';
 import { ogg } from './utils/ogg.js';
 import { openai } from './utils/openai.js';
+import { showHowUsed, showText } from './utils/show-console.js';
 
 
 console.log('env: ', process.env.NODE_ENV);
@@ -18,26 +19,20 @@ bot.command('start', async (ctx) => {
 bot.on(message('audio'), async (ctx) => {
   
   try {
-    await ctx.reply(code('Audio, cообщение принял, обрабатываю...'))
+    await ctx.reply(code('Audio cообщение принял, обрабатываю...'))
     // await ctx.reply(JSON.stringify(ctx.update.message, null, 2));
     const
       link = await ctx.telegram.getFileLink(ctx.update.message.audio.file_id),
-      userId = String(ctx.message.from.id),
-      { first_name, username } = ctx.message.from;
+      userId = String(ctx.message.from.id);
+    
+    showHowUsed(ctx.message.from, ctx.update.message.audio);
 
-    console.log(userId, username, first_name);
-    console.log('Duration: ', ctx.update.message.audio.duration);
-    console.log('File size: ', ctx.update.message.audio.file_size);
+    const
+      oggPath = await ogg.create(link.href, userId),
+      mp3Path = await ogg.toMp3(oggPath, userId),
+      text    = await openai.transcription(mp3Path);
 
-    const oggPath = await ogg.create(link.href, userId);
-    const mp3Path = await ogg.toMp3(oggPath, userId);
-
-    const text = await openai.transcription(mp3Path);
-
-    console.log('text: ', text);
-    console.log();
-    console.log();
-    console.log();
+    showText(userId, text);
     await ctx.reply(text);
   }
   catch (e) {
@@ -49,26 +44,21 @@ bot.on(message('audio'), async (ctx) => {
 
 bot.on(message('voice'), async (ctx) => {
   try {
-    await ctx.reply(code('Сообщение принял, обрабатываю...'))
+    await ctx.reply(code('Voice cообщение принял, обрабатываю...'))
     // await ctx.reply(JSON.stringify(ctx.message.voice, null, 2));
     const
       link = await ctx.telegram.getFileLink(ctx.message.voice.file_id),
-      userId = String(ctx.message.from.id),
-      { first_name, username } = ctx.message.from;
+      userId = String(ctx.message.from.id);
+    
+    showHowUsed(ctx.message.from, ctx.message.voice);
+  
+    const
+      oggPath = await ogg.create(link.href, userId),
+      mp3Path = await ogg.toMp3(oggPath, userId),
+      text    = await openai.transcription(mp3Path);
 
-    console.log(userId, username, first_name);
-    console.log('Duration: ', ctx.message.voice.duration);
-    console.log('File size: ', ctx.message.voice.file_size);
+    showText(userId, text);
 
-    const oggPath = await ogg.create(link.href, userId);
-    const mp3Path = await ogg.toMp3(oggPath, userId);
-
-    const text = await openai.transcription(mp3Path);
-
-    console.log('text: ', text);
-    console.log();
-    console.log();
-    console.log();
     await ctx.reply(text);
   }
   catch (e) {
@@ -97,4 +87,4 @@ process.once('SIGTERM', () => {
 
 
 // t.me/voice_to_text_slv4ik888_bot
-// git add . && git commit -m "2023-05-18" && git push -u origin main
+// git add . && git commit -m "2023-05-23" && git push -u origin main
