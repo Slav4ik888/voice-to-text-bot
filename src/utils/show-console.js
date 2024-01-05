@@ -12,7 +12,7 @@ export const showHowUsed = (from, data) => {
 /** Show text in console, if user is not slava88008 */
 export const showText = (userId, text) => {
 
-  if (userId === '548083680') return; // slava88008
+  // if (userId === '548083680') return; // slava88008
 
   console.log('text: ', text);
   console.log();

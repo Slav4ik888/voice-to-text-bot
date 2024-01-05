@@ -5,7 +5,8 @@ import { code } from 'telegraf/format';
 import { ogg } from './utils/ogg.js';
 import { openai } from './utils/openai.js';
 import { showHowUsed, showText } from './utils/show-console.js';
-
+import { removeFile } from './utils/remove-files.js';
+import { createFilename } from './utils/create-filename.js';
 
 console.log('env: ', process.env.NODE_ENV);
 
@@ -27,10 +28,9 @@ bot.on(message('audio'), async (ctx) => {
     
     showHowUsed(ctx.message.from, ctx.update.message.audio);
 
-    const
-      oggPath = await ogg.create(link.href, userId),
-      mp3Path = await ogg.toMp3(oggPath, userId),
-      text    = await openai.transcription(mp3Path);
+    const oggPath = await ogg.create(link.href, userId);
+    const mp3Path = await ogg.toMp3(oggPath, userId);
+    const text    = await openai.transcription(mp3Path);
 
     showText(userId, text);
     await ctx.reply(text);
@@ -52,14 +52,20 @@ bot.on(message('voice'), async (ctx) => {
     
     showHowUsed(ctx.message.from, ctx.message.voice);
   
-    const
-      oggPath = await ogg.create(link.href, userId),
-      mp3Path = await ogg.toMp3(oggPath, userId),
-      text    = await openai.transcription(mp3Path);
+    const oggPath = await ogg.create(link.href, userId);
+    const mp3Path = await ogg.toMp3(oggPath, userId);
+    const loops = await ogg.splitMp3(mp3Path, ctx.message.voice.duration);
 
-    showText(userId, text);
+    await openai.transcription(ctx, mp3Path, loops);
 
-    await ctx.reply(text);
+    removeFile(mp3Path);
+    for (let i = 0; i < loops; i++) {
+      const filename = createFilename(mp3Path, i)
+      removeFile(filename);
+    }
+
+
+    await ctx.reply('End');
   }
   catch (e) {
     console.log('Error in voice message: ', e.message);
@@ -87,4 +93,4 @@ process.once('SIGTERM', () => {
 
 
 // t.me/voice_to_text_slv4ik888_bot
-// git add . && git commit -m "2023-05-23" && git push -u origin main
+// git add . && git commit -m "2024-01-05" && git push -u origin main
