@@ -88,7 +88,7 @@ class OggConverter {
             console.log('An error occurred: ' + err.message);
           })
           .on('end', () => {
-            console.log('Processed part ' + i);
+            // console.log('Processed part ' + i);
             res(this.mp3Loop(mp3Path, duration, loops, i + 1))
           });
 

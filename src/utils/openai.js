@@ -1,7 +1,6 @@
 import { Configuration, OpenAIApi } from 'openai';
 import { createReadStream } from 'fs';
 import { createFilename } from './create-filename.js';
-import { removeFile } from './remove-files.js';
 
 
 
@@ -41,13 +40,6 @@ class OpenAI {
       
   async transcription(ctx, mp3Path, loops) {
     try {
-      // removeFile(mp3Path); // mp3
-      
-      // const response = await this.openai.createTranscription(
-      //   createReadStream('/Users/vyacheslav/programming/voice-to-text-bot/__temp/voices/548083680-0.mp3'),
-      //   'whisper-1'
-      // );
-      // return response.data.text
       return this.transcriptionLoop(ctx, mp3Path, loops)
     }
     catch (e) {
